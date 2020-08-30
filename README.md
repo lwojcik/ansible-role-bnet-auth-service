@@ -14,8 +14,8 @@ It builds the app from Git repository and generates backup of the previous deplo
 | `backup_directory` | `/home/deploy/backups/bnet-auth-service` | Directory used to generate backups of previous deployments as tgz files |
 | `BAS_NODE_ENV` | `production` | Environment type |
 | `BAS_NODE_HOST` | `localhost` | Project host |
-| `BAS_NODE_PORT` | `8888` | 3 |
-| `BAS_REDIS_ENABLE` | `true` | Enable Redis cache |
+| `BAS_NODE_PORT` | `8888` | Project port |
+| `BAS_REDIS_ENABLE` | `true` | Enable / disable Redis cache |
 | `BAS_REDIS_HOST` | `127.0.1` | URL of Redis instance used to store cached data |
 | `BAS_REDIS_PORT` | `6379` | Port of Redis instance used to store cached data |
 | `BAS_REDIS_PASSWORD` | `some_password` | Redis password |
