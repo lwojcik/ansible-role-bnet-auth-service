@@ -1,0 +1,3 @@
+---
+#- include: check_deps.yml
+- include: install.yml

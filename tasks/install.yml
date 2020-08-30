@@ -1,0 +1,78 @@
+---
+- name: Check if previous deployment exists
+  stat:
+    path: "{{ deploy_directory }}"
+  register: previous_deployment
+
+- name: Ensure backup directory exists
+  file:
+    path: "{{ backup_directory }}"
+    state: directory
+
+- name: Backup previous deployment
+  archive:
+    path: "{{ deploy_directory }}"
+    dest: "{{ backup_directory }}/{{ lookup('pipe','date +%Y-%m-%d_%H-%M-%S') }}.tgz"
+  changed_when: false
+  when: previous_deployment.stat.exists
+
+- name: Clone / update the repository
+  git:
+    repo: 'https://github.com/sc2pte/bnet-auth-service.git'
+    dest: '{{ deploy_directory }}'
+    depth: 1
+    force: true
+
+- name: Set environment variables
+  lineinfile:
+    dest: /etc/environment
+    regexp: "^{{ item.name }}="
+    line: "{{ item.name }}={{ item.value }}"
+    state: present
+  with_items:
+    - name: "BAS_NODE_ENV"
+      value: "{{ BAS_NODE_ENV }}"
+    - name: "BAS_NODE_HOST"
+      value: "{{ BAS_NODE_HOST }}"
+    - name: "BAS_NODE_PORT"
+      value: "{{ BAS_NODE_PORT }}"
+    - name: "BAS_REDIS_ENABLE"
+      value: "{{ BAS_REDIS_ENABLE }}"
+    - name: "BAS_REDIS_HOST"
+      value: "{{ BAS_REDIS_HOST }}"
+    - name: "BAS_REDIS_PORT"
+      value: "{{ BAS_REDIS_PORT }}"
+    - name: "BAS_REDIS_PASSWORD"
+      value: "{{ BAS_REDIS_PASSWORD }}"
+    - name: "BAS_REDIS_TTL"
+      value: "{{ BAS_REDIS_TTL }}"
+    - name: "BAS_REDIS_DB"
+      value: "{{ BAS_REDIS_DB }}"
+    - name: "BAS_REDIS_CACHE_SEGMENT"
+      value: "{{ BAS_REDIS_CACHE_SEGMENT }}"
+    - name: "BAS_BATTLENET_REGION"
+      value: "{{ BAS_BATTLENET_REGION }}"
+    - name: "BAS_BATTLENET_KEY"
+      value: "{{ BAS_BATTLENET_KEY }}"
+    - name: "BAS_BATTLENET_SECRET"
+      value: "{{ BAS_BATTLENET_SECRET }}"
+  become: true
+
+- name: Remove node_modules directory
+  file:
+    path: '{{ deploy_directory }}/node_modules'
+    state: absent
+
+- name: Install packages
+  npm:
+    path: '{{ deploy_directory }}'
+
+- name: Build project
+  command: 'npm run build --prefix {{ deploy_directory }}'
+
+- name: Delete running project instance from pm2
+  command: 'pm2 delete bnet-auth-service'
+  failed_when: false
+
+- name: Start project in pm2
+  command: 'pm2 start {{ deploy_directory }}/scripts/start.js -i max --name bnet-auth-service --watch --update-env -f'

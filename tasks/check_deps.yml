@@ -1,0 +1,36 @@
+---
+- name: Check package facts
+  package_facts:
+    manager: "auto"
+
+- name: Check if Nginx is installed
+  debug: 
+    msg: "Nginx is installed"
+  failed_when: "'nginx' not in ansible_facts.packages"
+
+- name: Check if Redis is installed
+  debug: 
+    msg: "Redis is installed"
+  failed_when: "'redis' not in ansible_facts.packages"
+
+- name: Check if Git is installed
+  debug: 
+    msg: "Git is installed"
+  failed_when: "'git' not in ansible_facts.packages"
+
+- name: Check if Node is installed
+  debug: 
+    msg: "Node is installed"
+  failed_when: "'nodejs' not in ansible_facts.packages"
+
+- name: Check if PM2 is installed
+  command: which pm2
+  register: pm2_installed
+  changed_when: false
+  failed_when: pm2_installed.stdout | length == 0
+
+- name: Check if PM2 is running
+  command: pm2 status
+  register: pm2_running
+  changed_when: false
+  failed_when: '"id" not in pm2_running.stdout'
