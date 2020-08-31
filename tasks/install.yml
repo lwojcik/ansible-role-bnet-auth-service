@@ -76,3 +76,7 @@
 
 - name: Start project in pm2
   command: 'pm2 start {{ deploy_directory }}/scripts/start.js -i max --name bnet-auth-service --watch --update-env -f'
+
+- name: Setup configuration as startup script
+  command: 'env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u lwoo --hp /home/lwoo'
+  become: true
