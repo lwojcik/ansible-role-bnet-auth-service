@@ -16,6 +16,10 @@
   changed_when: false
   when: previous_deployment.stat.exists
 
+- name: Stop running project instance in pm2
+  command: 'pm2 stop bnet-auth-service'
+  failed_when: false
+
 - name: Clone / update the repository
   git:
     repo: 'https://github.com/sc2pte/bnet-auth-service.git'
