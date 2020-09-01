@@ -1,13 +1,22 @@
 ---
+- name: Clone / update the repository
+  git:
+    repo: 'https://github.com/sc2pte/bnet-auth-service.git'
+    dest: '{{ deploy_directory }}'
+    depth: 1
+  register: git_clone
+
 - name: Check if previous deployment exists
   stat:
     path: "{{ deploy_directory }}"
   register: previous_deployment
+  when: git_clone.changed
 
 - name: Ensure backup directory exists
   file:
     path: "{{ backup_directory }}"
     state: directory
+  when: git_clone.changed
 
 - name: Backup previous deployment
   archive:
@@ -15,13 +24,12 @@
     dest: "{{ backup_directory }}/{{ lookup('pipe','date +%Y-%m-%d_%H-%M-%S') }}.tgz"
   changed_when: false
   when: previous_deployment.stat.exists
+  when: git_clone.changed
 
-- name: Clone / update the repository
-  git:
-    repo: 'https://github.com/sc2pte/bnet-auth-service.git'
-    dest: '{{ deploy_directory }}'
-    depth: 1
-    force: true
+- name: Stop running project instance in pm2
+  command: 'pm2 stop bnet-auth-service'
+  failed_when: false
+  when: git_clone.changed
 
 - name: Set environment variables
   lineinfile:
@@ -57,15 +65,18 @@
     - name: "BAS_BATTLENET_SECRET"
       value: "{{ BAS_BATTLENET_SECRET }}"
   become: true
+  when: git_clone.changed
 
 - name: Remove node_modules directory
   file:
     path: '{{ deploy_directory }}/node_modules'
     state: absent
+  when: git_clone.changed
 
 - name: Install packages
   npm:
     path: '{{ deploy_directory }}'
+  when: git_clone.changed
 
 - name: Build project
   command: 'npm run build --prefix {{ deploy_directory }}'
@@ -73,10 +84,13 @@
 - name: Delete running project instance from pm2
   command: 'pm2 delete bnet-auth-service'
   failed_when: false
+  when: git_clone.changed
 
 - name: Start project in pm2
   command: 'pm2 start {{ deploy_directory }}/scripts/start.js -i max --name bnet-auth-service --watch --update-env -f'
+  when: git_clone.changed
 
 - name: Setup configuration as startup script
   command: 'env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u lwoo --hp /home/lwoo'
   become: true
+  when: git_clone.changed
