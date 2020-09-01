@@ -4,6 +4,7 @@
     repo: 'https://github.com/sc2pte/bnet-auth-service.git'
     dest: '{{ deploy_directory }}'
     depth: 1
+    force: yes
   register: git_clone
 
 - name: Check if previous deployment exists
