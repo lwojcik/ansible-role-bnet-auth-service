@@ -23,8 +23,7 @@
     path: "{{ deploy_directory }}"
     dest: "{{ backup_directory }}/{{ lookup('pipe','date +%Y-%m-%d_%H-%M-%S') }}.tgz"
   changed_when: false
-  when: previous_deployment.stat.exists
-  when: git_clone.changed
+  when: git_clone.changed and previous_deployment.stat.exists
 
 - name: Stop running project instance in pm2
   command: 'pm2 stop bnet-auth-service'
