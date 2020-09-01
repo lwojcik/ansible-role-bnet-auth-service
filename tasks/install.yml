@@ -79,6 +79,7 @@
 
 - name: Build project
   command: 'npm run build --prefix {{ deploy_directory }}'
+  when: git_clone.changed
 
 - name: Delete running project instance from pm2
   command: 'pm2 delete bnet-auth-service'
