@@ -10,8 +10,8 @@ It builds the app from Git repository and generates backup of the previous deplo
 
 | Variable name | Sample value | Description |
 |-  |-  |-
-| `deploy_directory` | `/home/deploy/bnet-auth-service` | Directory used to deploy project |
-| `backup_directory` | `/home/deploy/backups/bnet-auth-service` | Directory used to generate backups of previous deployments as tgz files |
+| `bas_deploy_directory` | `/home/deploy/bnet-auth-service` | Directory used to deploy project |
+| `bas_backup_directory` | `/home/deploy/backups/bnet-auth-service` | Directory used to generate backups of previous deployments as tgz files |
 | `BAS_NODE_ENV` | `production` | Environment type |
 | `BAS_NODE_HOST` | `localhost` | Project host |
 | `BAS_NODE_PORT` | `8888` | Project port |
