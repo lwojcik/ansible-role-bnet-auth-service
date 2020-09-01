@@ -10,25 +10,25 @@
   stat:
     path: "{{ bas_deploy_directory }}"
   register: bas_previous_deployment
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Ensure backup directory exists
   file:
     path: "{{ bas_backup_directory }}"
     state: directory
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Backup previous deployment
   archive:
     path: "{{ bas_deploy_directory }}"
     dest: "{{ bas_backup_directory }}/{{ lookup('pipe','date +%Y-%m-%d_%H-%M-%S') }}.tgz"
   changed_when: false
-  when: force_deploy or bas_git_clone.changed and bas_previous_deployment.stat.exists
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed and bas_previous_deployment.stat.exists
 
 - name: Stop running project instance in pm2
   command: 'pm2 stop bnet-auth-service'
   failed_when: false
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Set environment variables
   lineinfile:
@@ -64,33 +64,33 @@
     - name: "BAS_BATTLENET_SECRET"
       value: "{{ BAS_BATTLENET_SECRET }}"
   become: true
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Remove node_modules directory
   file:
     path: '{{ bas_deploy_directory }}/node_modules'
     state: absent
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Install packages
   npm:
     path: '{{ bas_deploy_directory }}'
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Build project
   command: 'npm run build --prefix {{ bas_deploy_directory }}'
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Delete running project instance from pm2
   command: 'pm2 delete bnet-auth-service'
   failed_when: false
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Start project in pm2
   command: 'pm2 start {{ bas_deploy_directory }}/scripts/start.js -i max --name bnet-auth-service --watch --update-env -f'
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
 
 - name: Setup configuration as startup script
   command: 'env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u lwoo --hp /home/lwoo'
   become: true
-  when: force_deploy or bas_git_clone.changed
+  when: force_deploy is defined and force_deploy == True or bas_git_clone.changed
