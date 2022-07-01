@@ -1,6 +1,6 @@
 # ansible-role-bnet-auth-service
 
-**This is an Ansible role for bnet-auth-service v1. Support for v2 coming soon.**
+**This is an Ansible role for [bnet-auth-service v1](https://github.com/sc2pte/bnet-auth-service/tree/v1). Support for v2 coming soon.**
 
 Ansible role for installing and launching [bnet-auth-service](https://github.com/sc2pte/bnet-auth-service) instance on Debian-based server.
 
